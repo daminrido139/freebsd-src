@@ -193,19 +193,19 @@ static cap_channel_t *capnetdb;
 static cap_channel_t *capsysctl;
 static cap_channel_t *cappwd;
 
-static int
-xprintf(const char *fmt, ...)
-{
-	va_list ap;
-	int len;
-
-	va_start(ap, fmt);
-	len = vprintf(fmt, ap);
-	va_end(ap);
-	if (len < 0)
-		err(1, "printf()");
-	return (len);
-}
+// static int
+// xprintf(const char *fmt, ...)
+// {
+// 	va_list ap;
+// 	int len;
+//
+// 	va_start(ap, fmt);
+// 	len = vprintf(fmt, ap);
+// 	va_end(ap);
+// 	if (len < 0)
+// 		err(1, "printf()");
+// 	return (len);
+// }
 
 static bool
 _check_ksize(size_t received_size, size_t expected_size, const char *struct_name)
@@ -776,7 +776,7 @@ gather_inet(int proto)
 		sock->splice_socket = so->so_splice_so;
 		sock->proto = proto;
 		sock->inp_gencnt = xip->inp_gencnt;
-		sock->fibnum = so->so_fibnum;
+		// sock->fibnum = so->so_fibnum; so_fibnum not exist
 		if (xip->inp_vflag & INP_IPV4) {
 			sock->family = AF_INET;
 			sockaddr(&laddr->address, sock->family,
@@ -940,40 +940,40 @@ getfiles(void)
 	free(xfiles);
 }
 
-static int
-printaddr(struct sockaddr_storage *ss)
-{
-	struct sockaddr_un *sun;
-	char addrstr[NI_MAXHOST] = { '\0', '\0' };
-	int error, off, port = 0;
-
-	switch (ss->ss_family) {
-	case AF_INET:
-		if (sstosin(ss)->sin_addr.s_addr == INADDR_ANY)
-			addrstr[0] = '*';
-		port = ntohs(sstosin(ss)->sin_port);
-		break;
-	case AF_INET6:
-		if (IN6_IS_ADDR_UNSPECIFIED(&sstosin6(ss)->sin6_addr))
-			addrstr[0] = '*';
-		port = ntohs(sstosin6(ss)->sin6_port);
-		break;
-	case AF_UNIX:
-		sun = sstosun(ss);
-		off = (int)((char *)&sun->sun_path - (char *)sun);
-		return (xprintf("%.*s", sun->sun_len - off, sun->sun_path));
-	}
-	if (addrstr[0] == '\0') {
-		error = cap_getnameinfo(capnet, sstosa(ss), ss->ss_len,
-		    addrstr, sizeof(addrstr), NULL, 0, NI_NUMERICHOST);
-		if (error)
-			errx(1, "cap_getnameinfo()");
-	}
-	if (port == 0)
-		return xprintf("%s:*", addrstr);
-	else
-		return xprintf("%s:%d", addrstr, port);
-}
+// static int
+// printaddr(struct sockaddr_storage *ss)
+// {
+// 	struct sockaddr_un *sun;
+// 	char addrstr[NI_MAXHOST] = { '\0', '\0' };
+// 	int error, off, port = 0;
+//
+// 	switch (ss->ss_family) {
+// 	case AF_INET:
+// 		if (sstosin(ss)->sin_addr.s_addr == INADDR_ANY)
+// 			addrstr[0] = '*';
+// 		port = ntohs(sstosin(ss)->sin_port);
+// 		break;
+// 	case AF_INET6:
+// 		if (IN6_IS_ADDR_UNSPECIFIED(&sstosin6(ss)->sin6_addr))
+// 			addrstr[0] = '*';
+// 		port = ntohs(sstosin6(ss)->sin6_port);
+// 		break;
+// 	case AF_UNIX:
+// 		sun = sstosun(ss);
+// 		off = (int)((char *)&sun->sun_path - (char *)sun);
+// 		return (xprintf("%.*s", sun->sun_len - off, sun->sun_path));
+// 	}
+// 	if (addrstr[0] == '\0') {
+// 		error = cap_getnameinfo(capnet, sstosa(ss), ss->ss_len,
+// 		    addrstr, sizeof(addrstr), NULL, 0, NI_NUMERICHOST);
+// 		if (error)
+// 			errx(1, "cap_getnameinfo()");
+// 	}
+// 	if (port == 0)
+// 		return xprintf("%s:*", addrstr);
+// 	else
+// 		return xprintf("%s:%d", addrstr, port);
+// }
 
 static const char *
 getprocname(pid_t pid)
@@ -1048,381 +1048,597 @@ check_ports(struct sock *s)
 	return (0);
 }
 
-static const char *
-sctp_conn_state(int state)
-{
-	switch (state) {
-	case SCTP_CLOSED:
-		return "CLOSED";
-		break;
-	case SCTP_BOUND:
-		return "BOUND";
-		break;
-	case SCTP_LISTEN:
-		return "LISTEN";
-		break;
-	case SCTP_COOKIE_WAIT:
-		return "COOKIE_WAIT";
-		break;
-	case SCTP_COOKIE_ECHOED:
-		return "COOKIE_ECHOED";
-		break;
-	case SCTP_ESTABLISHED:
-		return "ESTABLISHED";
-		break;
-	case SCTP_SHUTDOWN_SENT:
-		return "SHUTDOWN_SENT";
-		break;
-	case SCTP_SHUTDOWN_RECEIVED:
-		return "SHUTDOWN_RECEIVED";
-		break;
-	case SCTP_SHUTDOWN_ACK_SENT:
-		return "SHUTDOWN_ACK_SENT";
-		break;
-	case SCTP_SHUTDOWN_PENDING:
-		return "SHUTDOWN_PENDING";
-		break;
-	default:
-		return "UNKNOWN";
-		break;
-	}
-}
+// static const char *
+// sctp_conn_state(int state)
+// {
+// 	switch (state) {
+// 	case SCTP_CLOSED:
+// 		return "CLOSED";
+// 		break;
+// 	case SCTP_BOUND:
+// 		return "BOUND";
+// 		break;
+// 	case SCTP_LISTEN:
+// 		return "LISTEN";
+// 		break;
+// 	case SCTP_COOKIE_WAIT:
+// 		return "COOKIE_WAIT";
+// 		break;
+// 	case SCTP_COOKIE_ECHOED:
+// 		return "COOKIE_ECHOED";
+// 		break;
+// 	case SCTP_ESTABLISHED:
+// 		return "ESTABLISHED";
+// 		break;
+// 	case SCTP_SHUTDOWN_SENT:
+// 		return "SHUTDOWN_SENT";
+// 		break;
+// 	case SCTP_SHUTDOWN_RECEIVED:
+// 		return "SHUTDOWN_RECEIVED";
+// 		break;
+// 	case SCTP_SHUTDOWN_ACK_SENT:
+// 		return "SHUTDOWN_ACK_SENT";
+// 		break;
+// 	case SCTP_SHUTDOWN_PENDING:
+// 		return "SHUTDOWN_PENDING";
+// 		break;
+// 	default:
+// 		return "UNKNOWN";
+// 		break;
+// 	}
+// }
 
-static const char *
-sctp_path_state(int state)
-{
-	switch (state) {
-	case SCTP_UNCONFIRMED:
-		return "UNCONFIRMED";
-		break;
-	case SCTP_ACTIVE:
-		return "ACTIVE";
-		break;
-	case SCTP_INACTIVE:
-		return "INACTIVE";
-		break;
-	default:
-		return "UNKNOWN";
-		break;
-	}
-}
+// static const char *
+// sctp_path_state(int state)
+// {
+// 	switch (state) {
+// 	case SCTP_UNCONFIRMED:
+// 		return "UNCONFIRMED";
+// 		break;
+// 	case SCTP_ACTIVE:
+// 		return "ACTIVE";
+// 		break;
+// 	case SCTP_INACTIVE:
+// 		return "INACTIVE";
+// 		break;
+// 	default:
+// 		return "UNKNOWN";
+// 		break;
+// 	}
+// }
+
+// static void
+// displaysock(struct sock *s, int pos)
+// {
+// 	int first, offset;
+// 	struct addr *laddr, *faddr;
+//
+// 	while (pos < 30)
+// 		pos += xprintf(" ");
+// 	pos += xprintf("%s", s->protoname);
+// 	if (s->vflag & INP_IPV4)
+// 		pos += xprintf("4");
+// 	if (s->vflag & INP_IPV6)
+// 		pos += xprintf("6");
+// 	if (s->vflag & (INP_IPV4 | INP_IPV6))
+// 		pos += xprintf(" ");
+// 	laddr = s->laddr;
+// 	faddr = s->faddr;
+// 	first = 1;
+// 	while (laddr != NULL || faddr != NULL) {
+// 		offset = 37;
+// 		while (pos < offset)
+// 			pos += xprintf(" ");
+// 		switch (s->family) {
+// 		case AF_INET:
+// 		case AF_INET6:
+// 			if (laddr != NULL)
+// 				pos += printaddr(&laddr->address);
+// 			offset += opt_w ? 46 : 22;
+// 			do
+// 				pos += xprintf(" ");
+// 			while (pos < offset);
+// 			if (faddr != NULL)
+// 				pos += printaddr(&faddr->address);
+// 			offset += opt_w ? 46 : 22;
+// 			break;
+// 		case AF_UNIX:
+// 			if ((laddr == NULL) || (faddr == NULL))
+// 				errx(1, "laddr = %p or faddr = %p is NULL",
+// 				    (void *)laddr, (void *)faddr);
+// 			if (laddr->address.ss_len == 0 && faddr->conn == 0) {
+// 				pos += xprintf("(not connected)");
+// 				offset += opt_w ? 92 : 44;
+// 				break;
+// 			}
+// 			/* Local bind(2) address, if any. */
+// 			if (laddr->address.ss_len > 0)
+// 				pos += printaddr(&laddr->address);
+// 			/* Remote peer we connect(2) to, if any. */
+// 			if (faddr->conn != 0) {
+// 				struct sock *p;
+//
+// 				pos += xprintf("%s-> ",
+// 				    laddr->address.ss_len > 0 ? " " : "");
+// 				p = RB_FIND(pcbs_t, &pcbs,
+// 				    &(struct sock){ .pcb = faddr->conn });
+// 				if (__predict_false(p == NULL)) {
+// 					/* XXGL: can this happen at all? */
+// 					pos += xprintf("??");
+// 				}  else if (p->laddr->address.ss_len == 0) {
+// 					struct file *f;
+//
+// 					f = RB_FIND(files_t, &ftree,
+// 					    &(struct file){ .xf_data =
+// 					    p->socket });
+// 					if (f != NULL) {
+// 						pos += xprintf("[%lu %d]",
+// 						    (u_long)f->xf_pid,
+// 						    f->xf_fd);
+// 					}
+// 				} else
+// 					pos += printaddr(&p->laddr->address);
+// 			}
+// 			/* Remote peer(s) connect(2)ed to us, if any. */
+// 			if (faddr->firstref != 0) {
+// 				struct sock *p;
+// 				struct file *f;
+// 				kvaddr_t ref = faddr->firstref;
+// 				bool fref = true;
+//
+// 				pos += xprintf(" <- ");
+//
+// 				while ((p = RB_FIND(pcbs_t, &pcbs,
+// 				    &(struct sock){ .pcb = ref })) != 0) {
+// 					f = RB_FIND(files_t, &ftree,
+// 					    &(struct file){ .xf_data =
+// 					    p->socket });
+// 					if (f != NULL) {
+// 						pos += xprintf("%s[%lu %d]",
+// 						    fref ? "" : ",",
+// 						    (u_long)f->xf_pid,
+// 						    f->xf_fd);
+// 					}
+// 					ref = p->faddr->nextref;
+// 					fref = false;
+// 				}
+// 			}
+// 			offset += opt_w ? 92 : 44;
+// 			break;
+// 		default:
+// 			abort();
+// 		}
+// 		while (pos < offset)
+// 			pos += xprintf(" ");
+// 		if (opt_A) {
+// 			pos += xprintf("0x%16lx", s->pcb);
+// 			offset += 18;
+// 		}
+// 		if (opt_f) {
+// 			pos += xprintf("%d", s->fibnum);
+// 			offset += 7;
+// 		}
+// 		if (opt_I) {
+// 			if (s->splice_socket != 0) {
+// 				struct sock *sp;
+//
+// 				sp = RB_FIND(socks_t, &socks, &(struct sock)
+// 				    { .socket = s->splice_socket });
+// 				if (sp != NULL) {
+// 					do
+// 						pos += xprintf(" ");
+// 					while (pos < offset);
+// 					pos += printaddr(&sp->laddr->address);
+// 				} else {
+// 					do
+// 						pos += xprintf(" ");
+// 					while (pos < offset);
+// 					pos += xprintf("??");
+// 					offset += opt_w ? 46 : 22;
+// 				}
+// 			}
+// 			offset += opt_w ? 46 : 22;
+// 		}
+// 		if (opt_i) {
+// 			if (s->proto == IPPROTO_TCP ||
+// 			    s->proto == IPPROTO_UDP) {
+// 				do
+// 					pos += xprintf(" ");
+// 				while (pos < offset);
+// 				pos += xprintf("%" PRIu64, s->inp_gencnt);
+// 			}
+// 			offset += 9;
+// 		}
+// 		if (opt_U) {
+// 			if (faddr != NULL &&
+// 			    ((s->proto == IPPROTO_SCTP &&
+// 			      s->state != SCTP_CLOSED &&
+// 			      s->state != SCTP_BOUND &&
+// 			      s->state != SCTP_LISTEN) ||
+// 			     (s->proto == IPPROTO_TCP &&
+// 			      s->state != TCPS_CLOSED &&
+// 			      s->state != TCPS_LISTEN))) {
+// 				do
+// 					pos += xprintf(" ");
+// 				while (pos < offset);
+// 				pos += xprintf("%u",
+// 				    ntohs(faddr->encaps_port));
+// 			}
+// 			offset += 7;
+// 		}
+// 		if (opt_s) {
+// 			if (faddr != NULL &&
+// 			    s->proto == IPPROTO_SCTP &&
+// 			    s->state != SCTP_CLOSED &&
+// 			    s->state != SCTP_BOUND &&
+// 			    s->state != SCTP_LISTEN) {
+// 				do
+// 					pos += xprintf(" ");
+// 				while (pos < offset);
+// 				pos += xprintf("%s",
+// 				    sctp_path_state(faddr->state));
+// 			}
+// 			offset += 13;
+// 		}
+// 		if (first) {
+// 			if (opt_s) {
+// 				if (s->proto == IPPROTO_SCTP ||
+// 				    s->proto == IPPROTO_TCP) {
+// 					do
+// 						pos += xprintf(" ");
+// 					while (pos < offset);
+// 					switch (s->proto) {
+// 					case IPPROTO_SCTP:
+// 						pos += xprintf("%s",
+// 						    sctp_conn_state(s->state));
+// 						break;
+// 					case IPPROTO_TCP:
+// 						if (s->state >= 0 &&
+// 						    s->state < TCP_NSTATES)
+// 							pos += xprintf("%s",
+// 							    tcpstates[s->state]);
+// 						else
+// 							pos += xprintf("?");
+// 						break;
+// 					}
+// 				}
+// 				offset += 13;
+// 			}
+// 			if (opt_S) {
+// 				if (s->proto == IPPROTO_TCP) {
+// 					do
+// 						pos += xprintf(" ");
+// 					while (pos < offset);
+// 					pos += xprintf("%.*s",
+// 					    TCP_FUNCTION_NAME_LEN_MAX,
+// 					    s->stack);
+// 				}
+// 				offset += TCP_FUNCTION_NAME_LEN_MAX + 1;
+// 			}
+// 			if (opt_C) {
+// 				if (s->proto == IPPROTO_TCP) {
+// 					do
+// 						pos += xprintf(" ");
+// 					while (pos < offset);
+// 					xprintf("%.*s", TCP_CA_NAME_MAX, s->cc);
+// 				}
+// 				offset += TCP_CA_NAME_MAX + 1;
+// 			}
+// 		}
+// 		if (laddr != NULL)
+// 			laddr = laddr->next;
+// 		if (faddr != NULL)
+// 			faddr = faddr->next;
+// 		if ((laddr != NULL) || (faddr != NULL)) {
+// 			xprintf("\n");
+// 			pos = 0;
+// 		}
+// 		first = 0;
+// 	}
+// 	xprintf("\n");
+// }
 
 static void
-displaysock(struct sock *s, int pos)
+format_addr(char *buf, size_t bufsize, struct sockaddr_storage *ss)
 {
-	int first, offset;
-	struct addr *laddr, *faddr;
+    int port = 0;
+    switch (ss->ss_family) {
+    case AF_INET: {
+        struct sockaddr_in *sin = sstosin(ss);
+        if (sin->sin_addr.s_addr == INADDR_ANY) {
+            snprintf(buf, bufsize, "*:%d", ntohs(sin->sin_port));
+        } else {
+            char host[NI_MAXHOST];
+            if (getnameinfo(sstosa(ss), sizeof(struct sockaddr_in),
+                            host, sizeof(host), NULL, 0, NI_NUMERICHOST) != 0)
+                strncpy(host, "?", sizeof(host));
+            port = ntohs(sin->sin_port);
+            if (port == 0)
+                snprintf(buf, bufsize, "%s:*", host);
+            else
+                snprintf(buf, bufsize, "%s:%d", host, port);
+        }
+        break;
+    }
+    case AF_INET6: {
+        struct sockaddr_in6 *sin6 = sstosin6(ss);
+        if (IN6_IS_ADDR_UNSPECIFIED(&sin6->sin6_addr)) {
+            snprintf(buf, bufsize, "*:%d", ntohs(sin6->sin6_port));
+        } else {
+            char host[NI_MAXHOST];
+            if (getnameinfo(sstosa(ss), sizeof(struct sockaddr_in6),
+                            host, sizeof(host), NULL, 0, NI_NUMERICHOST) != 0)
+                strncpy(host, "?", sizeof(host));
+            port = ntohs(sin6->sin6_port);
+            if (port == 0)
+                snprintf(buf, bufsize, "%s:*", host);
+            else
+                snprintf(buf, bufsize, "%s:%d", host, port);
+        }
+        break;
+    }
+    case AF_UNIX: {
+        struct sockaddr_un *sun = sstosun(ss);
+        int off = (int)((char *)&sun->sun_path - (char *)sun);
+        int len = sun->sun_len - off;
+        if (len < 0)
+            len = 0;
+        snprintf(buf, bufsize, "%.*s", len, sun->sun_path);
+        break;
+    }
+    default:
+        snprintf(buf, bufsize, "?");
+        break;
+    }
+}
 
-	while (pos < 30)
-		pos += xprintf(" ");
-	pos += xprintf("%s", s->protoname);
-	if (s->vflag & INP_IPV4)
-		pos += xprintf("4");
-	if (s->vflag & INP_IPV6)
-		pos += xprintf("6");
-	if (s->vflag & (INP_IPV4 | INP_IPV6))
-		pos += xprintf(" ");
-	laddr = s->laddr;
-	faddr = s->faddr;
-	first = 1;
-	while (laddr != NULL || faddr != NULL) {
-		offset = 37;
-		while (pos < offset)
-			pos += xprintf(" ");
-		switch (s->family) {
-		case AF_INET:
-		case AF_INET6:
-			if (laddr != NULL)
-				pos += printaddr(&laddr->address);
-			offset += opt_w ? 46 : 22;
-			do
-				pos += xprintf(" ");
-			while (pos < offset);
-			if (faddr != NULL)
-				pos += printaddr(&faddr->address);
-			offset += opt_w ? 46 : 22;
-			break;
-		case AF_UNIX:
-			if ((laddr == NULL) || (faddr == NULL))
-				errx(1, "laddr = %p or faddr = %p is NULL",
-				    (void *)laddr, (void *)faddr);
-			if (laddr->address.ss_len == 0 && faddr->conn == 0) {
-				pos += xprintf("(not connected)");
-				offset += opt_w ? 92 : 44;
-				break;
-			}
-			/* Local bind(2) address, if any. */
-			if (laddr->address.ss_len > 0)
-				pos += printaddr(&laddr->address);
-			/* Remote peer we connect(2) to, if any. */
-			if (faddr->conn != 0) {
-				struct sock *p;
 
-				pos += xprintf("%s-> ",
-				    laddr->address.ss_len > 0 ? " " : "");
-				p = RB_FIND(pcbs_t, &pcbs,
-				    &(struct sock){ .pcb = faddr->conn });
-				if (__predict_false(p == NULL)) {
-					/* XXGL: can this happen at all? */
-					pos += xprintf("??");
-				}  else if (p->laddr->address.ss_len == 0) {
-					struct file *f;
+static void
+format_unix_foreign_addr(char *buf, size_t bufsize, struct sock *s)
+{
+    if (s->laddr->address.ss_len == 0 && s->faddr->conn == 0) {
+        snprintf(buf, bufsize, "(not connected)");
+        return;
+    }
+    buf[0] = '\0';
+    if (s->faddr->conn != 0) {
+        struct sock *p = RB_FIND(pcbs_t, &pcbs, &(struct sock){ .pcb = s->faddr->conn });
+        if (p == NULL) {
+            snprintf(buf, bufsize, "-> ??");
+        } else if (p->laddr->address.ss_len == 0) {
+            struct file *f = RB_FIND(files_t, &ftree, &(struct file){ .xf_data = p->socket });
+            if (f != NULL)
+                snprintf(buf, bufsize, "-> [%lu %d]", (unsigned long)f->xf_pid, f->xf_fd);
+            else
+                snprintf(buf, bufsize, "-> ??");
+        } else {
+            char tmp[256];
+            format_addr(tmp, sizeof(tmp), &p->laddr->address);
+            snprintf(buf, bufsize, "-> %s", tmp);
+        }
+    }
+    if (s->faddr->firstref != 0) {
+        size_t len = strlen(buf);
+        snprintf(buf + len, bufsize - len, " <- ");
+        bool first = true;
+        kvaddr_t ref = s->faddr->firstref;
+        while (1) {
+            struct sock *p = RB_FIND(pcbs_t, &pcbs, &(struct sock){ .pcb = ref });
+            if (p == NULL)
+                break;
+            struct file *f = RB_FIND(files_t, &ftree, &(struct file){ .xf_data = p->socket });
+            if (f != NULL) {
+                if (!first) {
+                    strncat(buf, ",", bufsize - strlen(buf) - 1);
+                }
+                char peer[64];
+                snprintf(peer, sizeof(peer), "[%lu %d]", (unsigned long)f->xf_pid, f->xf_fd);
+                strncat(buf, peer, bufsize - strlen(buf) - 1);
+            }
+            if (p->faddr == NULL)
+                break;
+            ref = p->faddr->nextref;
+            first = false;
+        }
+    }
+}
 
-					f = RB_FIND(files_t, &ftree,
-					    &(struct file){ .xf_data =
-					    p->socket });
-					if (f != NULL) {
-						pos += xprintf("[%lu %d]",
-						    (u_long)f->xf_pid,
-						    f->xf_fd);
-					}
-				} else
-					pos += printaddr(&p->laddr->address);
-			}
-			/* Remote peer(s) connect(2)ed to us, if any. */
-			if (faddr->firstref != 0) {
-				struct sock *p;
-				struct file *f;
-				kvaddr_t ref = faddr->firstref;
-				bool fref = true;
+struct col_widths {
+    int user;
+    int command;
+    int pid;
+    int fd;
+    int proto;
+    int local_addr;
+    int foreign_addr;
+};
 
-				pos += xprintf(" <- ");
 
-				while ((p = RB_FIND(pcbs_t, &pcbs,
-				    &(struct sock){ .pcb = ref })) != 0) {
-					f = RB_FIND(files_t, &ftree,
-					    &(struct file){ .xf_data =
-					    p->socket });
-					if (f != NULL) {
-						pos += xprintf("%s[%lu %d]",
-						    fref ? "" : ",",
-						    (u_long)f->xf_pid,
-						    f->xf_fd);
-					}
-					ref = p->faddr->nextref;
-					fref = false;
-				}
-			}
-			offset += opt_w ? 92 : 44;
-			break;
-		default:
-			abort();
-		}
-		while (pos < offset)
-			pos += xprintf(" ");
-		if (opt_A) {
-			pos += xprintf("0x%16lx", s->pcb);
-			offset += 18;
-		}
-		if (opt_f) {
-			pos += xprintf("%d", s->fibnum);
-			offset += 7;
-		}
-		if (opt_I) {
-			if (s->splice_socket != 0) {
-				struct sock *sp;
+static void
+calculate_column_widths(struct col_widths *cw)
+{
+    cw->user         = 8;
+    cw->command      = 10;
+    cw->pid          = 5;
+    cw->fd           = 3;
+    cw->proto        = 6;
+    cw->local_addr   = opt_w ? 45 : 21;
+    cw->foreign_addr = opt_w ? 45 : 21;
 
-				sp = RB_FIND(socks_t, &socks, &(struct sock)
-				    { .socket = s->splice_socket });
-				if (sp != NULL) {
-					do
-						pos += xprintf(" ");
-					while (pos < offset);
-					pos += printaddr(&sp->laddr->address);
-				} else {
-					do
-						pos += xprintf(" ");
-					while (pos < offset);
-					pos += xprintf("??");
-					offset += opt_w ? 46 : 22;
-				}
-			}
-			offset += opt_w ? 46 : 22;
-		}
-		if (opt_i) {
-			if (s->proto == IPPROTO_TCP ||
-			    s->proto == IPPROTO_UDP) {
-				do
-					pos += xprintf(" ");
-				while (pos < offset);
-				pos += xprintf("%" PRIu64, s->inp_gencnt);
-			}
-			offset += 9;
-		}
-		if (opt_U) {
-			if (faddr != NULL &&
-			    ((s->proto == IPPROTO_SCTP &&
-			      s->state != SCTP_CLOSED &&
-			      s->state != SCTP_BOUND &&
-			      s->state != SCTP_LISTEN) ||
-			     (s->proto == IPPROTO_TCP &&
-			      s->state != TCPS_CLOSED &&
-			      s->state != TCPS_LISTEN))) {
-				do
-					pos += xprintf(" ");
-				while (pos < offset);
-				pos += xprintf("%u",
-				    ntohs(faddr->encaps_port));
-			}
-			offset += 7;
-		}
-		if (opt_s) {
-			if (faddr != NULL &&
-			    s->proto == IPPROTO_SCTP &&
-			    s->state != SCTP_CLOSED &&
-			    s->state != SCTP_BOUND &&
-			    s->state != SCTP_LISTEN) {
-				do
-					pos += xprintf(" ");
-				while (pos < offset);
-				pos += xprintf("%s",
-				    sctp_path_state(faddr->state));
-			}
-			offset += 13;
-		}
-		if (first) {
-			if (opt_s) {
-				if (s->proto == IPPROTO_SCTP ||
-				    s->proto == IPPROTO_TCP) {
-					do
-						pos += xprintf(" ");
-					while (pos < offset);
-					switch (s->proto) {
-					case IPPROTO_SCTP:
-						pos += xprintf("%s",
-						    sctp_conn_state(s->state));
-						break;
-					case IPPROTO_TCP:
-						if (s->state >= 0 &&
-						    s->state < TCP_NSTATES)
-							pos += xprintf("%s",
-							    tcpstates[s->state]);
-						else
-							pos += xprintf("?");
-						break;
-					}
-				}
-				offset += 13;
-			}
-			if (opt_S) {
-				if (s->proto == IPPROTO_TCP) {
-					do
-						pos += xprintf(" ");
-					while (pos < offset);
-					pos += xprintf("%.*s",
-					    TCP_FUNCTION_NAME_LEN_MAX,
-					    s->stack);
-				}
-				offset += TCP_FUNCTION_NAME_LEN_MAX + 1;
-			}
-			if (opt_C) {
-				if (s->proto == IPPROTO_TCP) {
-					do
-						pos += xprintf(" ");
-					while (pos < offset);
-					xprintf("%.*s", TCP_CA_NAME_MAX, s->cc);
-				}
-				offset += TCP_CA_NAME_MAX + 1;
-			}
-		}
-		if (laddr != NULL)
-			laddr = laddr->next;
-		if (faddr != NULL)
-			faddr = faddr->next;
-		if ((laddr != NULL) || (faddr != NULL)) {
-			xprintf("\n");
-			pos = 0;
-		}
-		first = 0;
-	}
-	xprintf("\n");
+    char buf[512];
+    char tmp[512];
+    char user_str[64];
+    char cmd_str[64];
+    char pid_str[16];
+    char fd_str[8];
+    int len;
+    struct file *xf;
+    struct sock *s;
+    struct passwd *pwd;
+
+    for (int i = 0; i < nfiles; i++) {
+        xf = &files[i];
+        if (xf->xf_data == 0)
+            continue;
+        if (opt_j >= 0 && opt_j != getprocjid(xf->xf_pid))
+            continue;
+
+        /* USER field */
+        if (opt_n || (pwd = cap_getpwuid(cappwd, xf->xf_uid)) == NULL)
+            snprintf(user_str, sizeof(user_str), "%lu", (unsigned long)xf->xf_uid);
+        else
+            snprintf(user_str, sizeof(user_str), "%s", pwd->pw_name);
+        len = strlen(user_str);
+        if (len > cw->user)
+            cw->user = len;
+
+        /* COMMAND field */
+        snprintf(cmd_str, sizeof(cmd_str), "%.10s", getprocname(xf->xf_pid));
+        len = strlen(cmd_str);
+        if (len > cw->command)
+            cw->command = len;
+
+        /* PID field */
+        snprintf(pid_str, sizeof(pid_str), "%lu", (unsigned long)xf->xf_pid);
+        len = strlen(pid_str);
+        if (len > cw->pid)
+            cw->pid = len;
+
+        /* FD field */
+        snprintf(fd_str, sizeof(fd_str), "%d", xf->xf_fd);
+        len = strlen(fd_str);
+        if (len > cw->fd)
+            cw->fd = len;
+
+        /* Now for socket addresses */
+        s = RB_FIND(socks_t, &socks, &(struct sock){ .socket = xf->xf_data });
+        if (s == NULL || !check_ports(s))
+            continue;
+
+        if (s->family == AF_UNIX) {
+            if (s->laddr) {
+                format_addr(buf, sizeof(buf), &s->laddr->address);
+                len = strlen(buf);
+                if (len > cw->local_addr)
+                    cw->local_addr = len;
+            }
+            if (s->faddr) {
+                format_unix_foreign_addr(tmp, sizeof(tmp), s);
+                len = strlen(tmp);
+                if (len > cw->foreign_addr)
+                    cw->foreign_addr = len;
+            }
+        } else {
+            if (s->laddr) {
+                format_addr(buf, sizeof(buf), &s->laddr->address);
+                len = strlen(buf);
+                if (len > cw->local_addr)
+                    cw->local_addr = len;
+            }
+            if (s->faddr) {
+                format_addr(buf, sizeof(buf), &s->faddr->address);
+                len = strlen(buf);
+                if (len > cw->foreign_addr)
+                    cw->foreign_addr = len;
+            }
+        }
+    }
 }
 
 static void
 display(void)
 {
-	struct passwd *pwd;
-	struct file *xf;
-	struct sock *s;
-	int n, pos;
+    struct col_widths cw;
+    calculate_column_widths(&cw);
 
-	if (!opt_q) {
-		printf("%-8s %-10s %-5s %-3s %-6s %-*s %-*s",
-		    "USER", "COMMAND", "PID", "FD", "PROTO",
-		    opt_w ? 45 : 21, "LOCAL ADDRESS",
-		    opt_w ? 45 : 21, "FOREIGN ADDRESS");
-		if (opt_A)
-			printf(" %-18s", "PCB KVA");
-		if (opt_f)
-			/* RT_MAXFIBS is 65535. */
-			printf(" %-6s", "FIB");
-		if (opt_I)
-			printf(" %-*s", opt_w ? 45 : 21, "SPLICE ADDRESS");
-		if (opt_i)
-			printf(" %-8s", "ID");
-		if (opt_U)
-			printf(" %-6s", "ENCAPS");
-		if (opt_s) {
-			printf(" %-12s", "PATH STATE");
-			printf(" %-12s", "CONN STATE");
-		}
-		if (opt_S)
-			printf(" %-*.*s", TCP_FUNCTION_NAME_LEN_MAX,
-			    TCP_FUNCTION_NAME_LEN_MAX, "STACK");
-		if (opt_C)
-			printf(" %-.*s", TCP_CA_NAME_MAX, "CC");
-		printf("\n");
-	}
-	cap_setpassent(cappwd, 1);
-	for (xf = files, n = 0; n < nfiles; ++n, ++xf) {
-		if (xf->xf_data == 0)
-			continue;
-		if (opt_j >= 0 && opt_j != getprocjid(xf->xf_pid))
-			continue;
-		s = RB_FIND(socks_t, &socks,
-		    &(struct sock){ .socket = xf->xf_data});
-		if (s != NULL && check_ports(s)) {
-			s->shown = 1;
-			pos = 0;
-			if (opt_n ||
-			    (pwd = cap_getpwuid(cappwd, xf->xf_uid)) == NULL)
-				pos += xprintf("%lu", (u_long)xf->xf_uid);
-			else
-				pos += xprintf("%s", pwd->pw_name);
-			do
-				pos += xprintf(" ");
-			while (pos < 9);
-			pos += xprintf("%.10s", getprocname(xf->xf_pid));
-			do
-				pos += xprintf(" ");
-			while (pos < 20);
-			pos += xprintf("%5lu", (u_long)xf->xf_pid);
-			do
-				pos += xprintf(" ");
-			while (pos < 26);
-			pos += xprintf("%-3d", xf->xf_fd);
-			displaysock(s, pos);
-		}
-	}
-	if (opt_j >= 0)
-		return;
-	SLIST_FOREACH(s, &nosocks, socket_list) {
-		if (!check_ports(s))
-			continue;
-		pos = xprintf("%-8s %-10s %-5s %-3s",
-		    "?", "?", "?", "?");
-		displaysock(s, pos);
-	}
-	RB_FOREACH(s, socks_t, &socks) {
-		if (s->shown)
-			continue;
-		if (!check_ports(s))
-			continue;
-		pos = xprintf("%-8s %-10s %-5s %-3s",
-		    "?", "?", "?", "?");
-		displaysock(s, pos);
-	}
+    printf("%-*s %-*s %-*s %-*s %-*s %-*s %-*s",
+           cw.user,         "USER",
+           cw.command,      "COMMAND",
+           cw.pid,          "PID",
+           cw.fd,           "FD",
+           cw.proto,        "PROTO",
+           cw.local_addr,   "LOCAL ADDRESS",
+           cw.foreign_addr, "FOREIGN ADDRESS");
+    if (opt_A)
+        printf(" %-18s", "PCB KVA");
+    if (opt_f)
+        printf(" %-6s", "FIB");
+    if (opt_I)
+        printf(" %-*s", opt_w ? 45 : 21, "SPLICE ADDRESS");
+    if (opt_i)
+        printf(" %-8s", "ID");
+    if (opt_U)
+        printf(" %-6s", "ENCAPS");
+    if (opt_s) {
+        printf(" %-12s %-12s", "PATH STATE", "CONN STATE");
+    }
+    if (opt_S)
+        printf(" %-*s", TCP_FUNCTION_NAME_LEN_MAX, "STACK");
+    if (opt_C)
+        printf(" %-*s", TCP_CA_NAME_MAX, "CC");
+    printf("\n");
+
+    struct passwd *pwd;
+    char user_str[64], cmd_str[64], pid_str[16], fd_str[8];
+    char local_str[512], foreign_str[512];
+    struct file *xf;
+    struct sock *s;
+
+    for (int i = 0; i < nfiles; i++) {
+        xf = &files[i];
+        if (xf->xf_data == 0)
+            continue;
+        if (opt_j >= 0 && opt_j != getprocjid(xf->xf_pid))
+            continue;
+        s = RB_FIND(socks_t, &socks, &(struct sock){ .socket = xf->xf_data });
+        if (s == NULL || !check_ports(s))
+            continue;
+
+        /* USER */
+        if (opt_n || (pwd = cap_getpwuid(cappwd, xf->xf_uid)) == NULL)
+            snprintf(user_str, sizeof(user_str), "%lu", (unsigned long)xf->xf_uid);
+        else
+            snprintf(user_str, sizeof(user_str), "%s", pwd->pw_name);
+        /* COMMAND */
+        snprintf(cmd_str, sizeof(cmd_str), "%.10s", getprocname(xf->xf_pid));
+        /* PID */
+        snprintf(pid_str, sizeof(pid_str), "%lu", (unsigned long)xf->xf_pid);
+        /* FD */
+        snprintf(fd_str, sizeof(fd_str), "%d", xf->xf_fd);
+
+        if (s->family == AF_UNIX) {
+            if (s->laddr)
+                format_addr(local_str, sizeof(local_str), &s->laddr->address);
+            else
+                strcpy(local_str, "");
+            if (s->faddr)
+                format_unix_foreign_addr(foreign_str, sizeof(foreign_str), s);
+            else
+                strcpy(foreign_str, "");
+        } else {
+            if (s->laddr)
+                format_addr(local_str, sizeof(local_str), &s->laddr->address);
+            else
+                strcpy(local_str, "?");
+            if (s->faddr)
+                format_addr(foreign_str, sizeof(foreign_str), &s->faddr->address);
+            else
+                strcpy(foreign_str, "?");
+        }
+
+        printf("%-*s %-*s %-*s %-*s %-*s %-*s %-*s",
+               cw.user,         user_str,
+               cw.command,      cmd_str,
+               cw.pid,          pid_str,
+               cw.fd,           fd_str,
+               cw.proto,        s->protoname,
+               cw.local_addr,   local_str,
+               cw.foreign_addr, foreign_str);
+        printf("\n");
+    }
 }
+
+
 
 static int
 set_default_protos(void)
