@@ -11,11 +11,11 @@ Previously, column widths were fixed or inconsistent, making it difficult to rea
 
 ### Before (Fixed Column Widths)  
 *(Difficult to read when entries are long or misaligned.)*  
-![Before Update](path/to/before_image.png)  
+![Before Update](assets/before.png)  
 
 ### After (Dynamically Adjusted Columns)  
 *(Now columns expand automatically to fit content.)*  
-![After Update](path/to/after_image.png)  
+![After Update](assets/now.png)  
 
 ---
 
