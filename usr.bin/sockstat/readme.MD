@@ -42,6 +42,7 @@ pkg install curl
 curl -O https://raw.githubusercontent.com/daminrido139/freebsd-src/main/usr.bin/sockstat/sockstat
 chmod +x sockstat
 ./sockstat
+```
 
 ## Future Improvements
 - Integrate libxo for structured output in JSON/XML/HTML formats.
